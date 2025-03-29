@@ -54,6 +54,9 @@ private:
 	GLFWwindow* window;
 	VkInstance instance;
 	VkDebugUtilsMessengerEXT debugMessenger;     //Validation layers - MessageCallbacks
+	VkPhysicalDevice physicalDevice;
+
+
 	void initWindow()
 	{
 		glfwInit();
@@ -199,7 +202,36 @@ private:
 #pragma region PhysicalDevice/QueueFamilies
 	void pickPhysicalDevice()
 	{
+		uint32_t deviceCount = 0;
+		vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
+		if (deviceCount == 0) {
+			throw std::runtime_error("failed to find GPUs with Vulkan support!");
+		}
+
+		std::vector<VkPhysicalDevice> devices(deviceCount);
+		vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+
+		for (const auto& device : devices) {
+			if (isDeviceSuitable(device)) {
+				VkPhysicalDeviceProperties deviceProperties;
+				vkGetPhysicalDeviceProperties(device, &deviceProperties);
+				VkPhysicalDeviceFeatures deviceFeatures;
+				vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+				physicalDevice = device;
+				break;
+			}
+		}
+
+		if (physicalDevice == VK_NULL_HANDLE) {
+			throw std::runtime_error("failed to find a suitable GPU!");
+		}
+
+
+	}
+
+	bool isDeviceSuitable(VkPhysicalDevice device) {
+		return true;
 	}
 #pragma endregion
 
